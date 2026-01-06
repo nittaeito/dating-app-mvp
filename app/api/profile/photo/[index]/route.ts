@@ -41,8 +41,9 @@ export async function DELETE(
     const photoUrl = profile.photo_urls[index];
     await deleteProfilePhoto(photoUrl);
 
-    // 配列から削除
-    const newPhotoUrls = profile.photo_urls.filter(
+    // 配列から削除（型を明示）
+    const photoUrls: string[] = profile.photo_urls || [];
+    const newPhotoUrls = photoUrls.filter(
       (_url: string, i: number) => i !== index
     );
 
