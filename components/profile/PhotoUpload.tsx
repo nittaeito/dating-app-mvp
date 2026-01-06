@@ -129,21 +129,14 @@ export function PhotoUpload({
           {photos[index] ? (
             <>
               <div className="relative w-full h-full bg-gray-100">
-                {photos[index].startsWith('blob:') || photos[index].startsWith('http') ? (
-                  <img
-                    src={photos[index]}
-                    alt={`写真${index + 1}`}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                ) : (
-                  <Image
-                    src={photos[index]}
-                    alt={`写真${index + 1}`}
-                    fill
-                    className="object-cover rounded-lg"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
-                )}
+                <Image
+                  src={photos[index]}
+                  alt={`写真${index + 1}`}
+                  fill
+                  className="object-cover rounded-lg"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  unoptimized={photos[index].startsWith('blob:')}
+                />
                 {uploading === index && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg z-20">
                     <div className="text-white text-sm">アップロード中...</div>

@@ -42,7 +42,9 @@ export async function DELETE(
     await deleteProfilePhoto(photoUrl);
 
     // 配列から削除
-    const newPhotoUrls = profile.photo_urls.filter((_, i) => i !== index);
+    const newPhotoUrls = profile.photo_urls.filter(
+      (_url: string, i: number) => i !== index
+    );
 
     // 最低1枚必要
     if (newPhotoUrls.length < 1) {
