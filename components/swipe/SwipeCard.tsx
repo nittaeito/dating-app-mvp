@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { motion, PanInfo } from "framer-motion";
+import { motion, PanInfo, useMotionValue, useTransform } from "framer-motion";
 
 interface SwipeCardProps {
   user: {
@@ -20,9 +20,15 @@ interface SwipeCardProps {
 
 export function SwipeCard({ user, onLike, onSkip, index }: SwipeCardProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-  const [dragDirection, setDragDirection] = useState<"left" | "right" | null>(
-    null
-  );
+  const [dragDirection, setDragDirection] = useState<"left" | "right" | null>(null);
+
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 200], [-30, 30]);
+  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
+
+  // Stamp animations
+  const likeOpacity = useTransform(x, [10, 100], [0, 1]);
+  const nopeOpacity = useTransform(x, [-10, -100], [0, 1]);
 
   function handleDragEnd(
     event: MouseEvent | TouchEvent | PointerEvent,
@@ -46,13 +52,15 @@ export function SwipeCard({ user, onLike, onSkip, index }: SwipeCardProps) {
     }
   }
 
-  function nextPhoto() {
+  function nextPhoto(e: React.MouseEvent) {
+    e.stopPropagation();
     if (user.photoUrls.length > 1) {
       setCurrentPhotoIndex((prev) => (prev + 1) % user.photoUrls.length);
     }
   }
 
-  function prevPhoto() {
+  function prevPhoto(e: React.MouseEvent) {
+    e.stopPropagation();
     if (user.photoUrls.length > 1) {
       setCurrentPhotoIndex(
         (prev) => (prev - 1 + user.photoUrls.length) % user.photoUrls.length
@@ -60,93 +68,112 @@ export function SwipeCard({ user, onLike, onSkip, index }: SwipeCardProps) {
     }
   }
 
+  const isFront = index === 0;
+
   return (
     <motion.div
-      className="absolute w-full max-w-sm mx-auto"
-      style={{ zIndex: 100 - index }}
-      drag="x"
+      className="absolute w-full max-w-sm mx-auto cursor-grab active:cursor-grabbing"
+      style={{
+        zIndex: 100 - index,
+        x: isFront ? x : 0,
+        rotate: isFront ? rotate : 0,
+        scale: 1 - index * 0.05,
+        y: index * 10,
+        opacity: isFront ? opacity : 1 - index * 0.2,
+      }}
+      drag={isFront ? "x" : false}
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.2}
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}
-      initial={{ scale: 1, opacity: 1 }}
-      animate={{
-        x: dragDirection === "right" ? 50 : dragDirection === "left" ? -50 : 0,
-        rotate: dragDirection === "right" ? 10 : dragDirection === "left" ? -10 : 0,
-      }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-        {/* 写真カルーセル */}
-        <div className="relative aspect-[3/4] bg-gray-200">
-          {user.photoUrls[currentPhotoIndex] && (
+      <div className="relative bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-white/10 h-[600px]">
+        {/* Photo Carousel */}
+        <div className="relative h-full w-full">
+          {user.photoUrls[currentPhotoIndex] ? (
             <Image
               src={user.photoUrls[currentPhotoIndex]}
-              alt={`${user.nickname}の写真`}
+              alt={`${user.nickname}`}
               fill
-              className="object-cover"
-              priority
+              className="object-cover pointer-events-none"
+              priority={index <= 1}
             />
+          ) : (
+            <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+              <span className="text-slate-500">No Image</span>
+            </div>
           )}
-          
-          {/* 写真インジケーター */}
+
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/30 pointer-events-none" />
+
+          {/* Photo Indicators */}
           {user.photoUrls.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+            <div className="absolute top-4 left-0 right-0 gap-1.5 flex justify-center px-4 z-20">
               {user.photoUrls.map((_, i) => (
                 <div
                   key={i}
-                  className={`w-2 h-2 rounded-full ${
-                    i === currentPhotoIndex ? "bg-white" : "bg-white/50"
-                  }`}
+                  className={`flex-1 h-1 rounded-full backdrop-blur-sm transition-all duration-300 ${i === currentPhotoIndex ? "bg-white" : "bg-white/30"
+                    }`}
                 />
               ))}
             </div>
           )}
 
-          {/* スワイプ方向インジケーター */}
-          {dragDirection === "right" && (
-            <div className="absolute inset-0 flex items-center justify-center bg-green-500/20">
-              <span className="text-6xl">♥</span>
-            </div>
-          )}
-          {dragDirection === "left" && (
-            <div className="absolute inset-0 flex items-center justify-center bg-red-500/20">
-              <span className="text-6xl">×</span>
-            </div>
-          )}
-
-          {/* 写真切り替えボタン（タッチ用） */}
-          {user.photoUrls.length > 1 && (
+          {/* Stamps */}
+          {isFront && (
             <>
-              <button
-                type="button"
-                onClick={prevPhoto}
-                className="absolute left-2 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/30 rounded-full flex items-center justify-center text-white"
+              <motion.div
+                style={{ opacity: likeOpacity }}
+                className="absolute top-10 left-10 transform -rotate-12 border-4 border-green-400 rounded-xl px-4 py-2 z-10 box-border"
               >
-                ←
-              </button>
-              <button
-                type="button"
-                onClick={nextPhoto}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/30 rounded-full flex items-center justify-center text-white"
+                <span className="text-4xl font-black text-green-400 uppercase tracking-widest drop-shadow-md">LIKE</span>
+              </motion.div>
+              <motion.div
+                style={{ opacity: nopeOpacity }}
+                className="absolute top-10 right-10 transform rotate-12 border-4 border-red-500 rounded-xl px-4 py-2 z-10"
               >
-                →
-              </button>
+                <span className="text-4xl font-black text-red-500 uppercase tracking-widest drop-shadow-md">NOPE</span>
+              </motion.div>
             </>
           )}
-        </div>
 
-        {/* ユーザー情報 */}
-        <div className="p-4">
-          <h2 className="text-2xl font-bold">
-            {user.nickname}, {user.age}
-          </h2>
-          {user.bio && (
-            <p className="mt-2 text-gray-600 line-clamp-3">{user.bio}</p>
-          )}
+          {/* Touch Navigation Layer */}
+          <div className="absolute inset-0 flex z-10">
+            <div className="w-1/2 h-full" onClick={prevPhoto} />
+            <div className="w-1/2 h-full" onClick={nextPhoto} />
+          </div>
+
+          {/* User Info Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 z-20 pointer-events-none">
+            <div className="flex items-end gap-3 mb-2">
+              <h2 className="text-4xl font-bold text-white tracking-tight">
+                {user.nickname}
+              </h2>
+              <span className="text-2xl font-medium text-white/90 mb-1">{user.age}</span>
+            </div>
+
+            {user.bio && (
+              <p className="text-white/80 line-clamp-3 text-sm leading-relaxed font-light drop-shadow-md">
+                {user.bio}
+              </p>
+            )}
+
+            {/* Action Hints */}
+            <div className="mt-4 flex gap-4 opacity-50 text-xs text-white/70 uppercase tracking-widest font-semibold">
+              <div className="flex items-center gap-1">
+                <span className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px]">↩</span>
+                Pass
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px]">♥</span>
+                Like
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </motion.div>
   );
 }
-

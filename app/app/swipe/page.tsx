@@ -42,7 +42,9 @@ export default function SwipePage() {
       const result = await res.json();
 
       if (!res.ok) {
-        toast.error(result.error?.message || "候補の取得に失敗しました");
+        // toast.error(result.error?.message || "候補の取得に失敗しました");
+        // Silently fail or retry, or show empty state
+        setCandidates([]);
         return;
       }
 
@@ -78,7 +80,6 @@ export default function SwipePage() {
         setShowMatchModal(true);
       }
 
-      // 次のカードへ
       setCurrentIndex((prev) => prev + 1);
     } catch (error) {
       toast.error("通信エラーが発生しました");
@@ -102,7 +103,6 @@ export default function SwipePage() {
         return;
       }
 
-      // 次のカードへ
       setCurrentIndex((prev) => prev + 1);
     } catch (error) {
       toast.error("通信エラーが発生しました");
@@ -122,7 +122,6 @@ export default function SwipePage() {
     setMatchId(null);
   }
 
-  // 候補がなくなったら再読み込み
   useEffect(() => {
     if (currentIndex >= candidates.length && candidates.length > 0) {
       loadCandidates();
@@ -130,28 +129,31 @@ export default function SwipePage() {
     }
   }, [currentIndex, candidates.length]);
 
-  const currentCandidate = candidates[currentIndex];
-  const visibleCandidates = candidates.slice(
-    currentIndex,
-    currentIndex + 3
-  );
+  const visibleCandidates = candidates.slice(currentIndex, currentIndex + 3);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>読み込み中...</p>
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-400 font-medium">Finding prospects...</p>
+        </div>
+        <TabNavigation />
       </div>
     );
   }
 
-  if (!currentCandidate) {
+  if (!candidates[currentIndex]) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4">
-        <div className="text-6xl mb-4">😊</div>
-        <h2 className="text-xl font-bold mb-2">近くに新しいユーザーがいません</h2>
-        <p className="text-gray-600 mb-6">後でもう一度確認してください</p>
-        <Button onClick={() => router.push("/app/matches")}>
-          マッチを見る
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center px-4 pb-20">
+        <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-indigo-500/10">
+          <span className="text-4xl">✨</span>
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-2">No more profiles</h2>
+        <p className="text-slate-400 mb-8 text-center max-w-xs">You&apos;ve seen everyone nearby. check back later for new people.</p>
+
+        <Button onClick={() => router.push("/app/matches")} variant="outline" className="min-w-[200px]">
+          View Matches
         </Button>
         <TabNavigation />
       </div>
@@ -159,31 +161,47 @@ export default function SwipePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="max-w-sm mx-auto relative" style={{ height: "calc(100vh - 80px)" }}>
-        {visibleCandidates.map((candidate, index) => (
-          <SwipeCard
-            key={candidate.userId}
-            user={candidate}
-            onLike={handleLike}
-            onSkip={handleSkip}
-            index={index}
-          />
-        ))}
+    <div className="min-h-screen bg-slate-950 text-white overflow-hidden">
+      {/* Background Ambience */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-indigo-600/10 rounded-full blur-[80px]" />
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-pink-600/10 rounded-full blur-[80px]" />
+      </div>
 
-        {/* アクションボタン */}
-        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 flex gap-6">
+      <div className="relative h-[calc(100vh-80px)] w-full max-w-md mx-auto flex flex-col pt-4">
+        {/* Card Stack */}
+        <div className="flex-1 relative w-full px-4 mb-24">
+          {visibleCandidates.map((candidate, index) => (
+            <SwipeCard
+              key={candidate.userId}
+              user={candidate}
+              onLike={handleLike}
+              onSkip={handleSkip}
+              index={index}
+            />
+          ))}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-8 z-50">
           <button
             onClick={handleSkip}
-            className="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center text-3xl hover:bg-gray-50"
+            className="w-16 h-16 rounded-full bg-slate-800 border border-slate-700 shadow-xl flex items-center justify-center text-3xl text-red-500 hover:scale-110 hover:bg-slate-700 transition-all duration-200 active:scale-95"
+            aria-label="Skip"
           >
-            ×
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-8 h-8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
+
           <button
             onClick={handleLike}
-            className="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center text-3xl text-red-500 hover:bg-gray-50"
+            className="w-20 h-20 rounded-full bg-gradient-to-tr from-pink-500 to-indigo-500 shadow-xl shadow-indigo-500/40 flex items-center justify-center text-4xl text-white hover:scale-110 hover:shadow-indigo-500/60 transition-all duration-200 active:scale-95"
+            aria-label="Like"
           >
-            ♥
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10">
+              <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
+            </svg>
           </button>
         </div>
       </div>
@@ -199,4 +217,3 @@ export default function SwipePage() {
     </div>
   );
 }
-

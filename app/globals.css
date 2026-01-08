@@ -3,14 +3,42 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Premium Light Theme (Fallback/Optional) */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  
+  --border: #e2e8f0;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Premium Dark Theme */
+    --background: #0f172a; /* Slate 900 - Deep Blue/Black */
+    --foreground: #f8fafc; /* Slate 50 */
+    
+    --primary: #6366f1; /* Indigo 500 */
+    --primary-foreground: #ffffff;
+    
+    /* Gradient accents can be used via utility classes, but here are base colors */
+    --accent-pink: #ec4899; /* Pink 500 */
+    --accent-blue: #3b82f6; /* Blue 500 */
+    
+    --card: #1e293b; /* Slate 800 */
+    --card-foreground: #f8fafc;
+    
+    --muted: #334155; /* Slate 700 */
+    --muted-foreground: #94a3b8; /* Slate 400 */
+    
+    --border: #334155;
   }
 }
 
@@ -18,11 +46,23 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden; /* Prevent horizontal scroll from animations */
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+  
+  .glass-panel {
+    @apply bg-white/10 backdrop-blur-md border border-white/10;
+  }
+  
+  .glass-panel-dark {
+    @apply bg-black/40 backdrop-blur-md border border-white/5;
+  }
+  
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500;
+  }
 }
-

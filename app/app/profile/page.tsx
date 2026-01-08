@@ -60,8 +60,8 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>読み込み中...</p>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -71,63 +71,92 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white p-6 mb-4">
-          <h1 className="text-2xl font-bold mb-6">マイページ</h1>
+    <div className="min-h-screen bg-slate-950 pb-24 text-white">
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-900/10 rounded-full blur-[100px]" />
+      </div>
 
-          {/* 写真ギャラリー */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="max-w-2xl mx-auto relative z-10">
+        <div className="glass-panel-dark m-4 p-6 rounded-3xl backdrop-blur-xl">
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
+            <Button onClick={() => router.push("/profile/edit")} variant="outline" size="sm">
+              Edit
+            </Button>
+          </div>
+
+          {/* Profile Header */}
+          <div className="flex items-center gap-6 mb-8">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 p-1">
+              <div className="w-full h-full rounded-full overflow-hidden bg-slate-800 relative">
+                {profile.photoUrls[0] ? (
+                  <Image src={profile.photoUrls[0]} alt="Avatar" fill className="object-cover" />
+                ) : (
+                  <span className="flex items-center justify-center h-full text-2xl">👤</span>
+                )}
+              </div>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold">{profile.nickname}</h2>
+              <div className="flex items-center gap-2 text-slate-400 mt-1">
+                <span>{profile.age} years old</span>
+                <span>•</span>
+                <span>{profile.gender === 'male' ? 'Male' : 'Female'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Photo Gallery */}
+          <div className="grid grid-cols-3 gap-3 mb-8">
             {profile.photoUrls.map((url, index) => (
-              <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-200">
+              <div key={index} className="relative aspect-square rounded-2xl overflow-hidden bg-slate-800 border border-white/5 shadow-inner group">
                 <Image
                   src={url}
-                  alt={`写真${index + 1}`}
+                  alt={`Photo ${index + 1}`}
                   fill
-                  className="object-cover"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
               </div>
             ))}
+            {/* Add placeholder slots if less than 6 photos maybe? skipping for now */}
           </div>
 
-          {/* プロフィール情報 */}
-          <div className="mb-6">
-            <h2 className="text-xl font-bold mb-2">
-              {profile.nickname}, {profile.age}
-            </h2>
-            {profile.bio && (
-              <p className="text-gray-600 whitespace-pre-wrap">{profile.bio}</p>
-            )}
+          {/* Bio */}
+          {profile.bio && (
+            <div className="mb-8 p-4 bg-slate-900/50 rounded-2xl border border-white/5">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">About Me</h3>
+              <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <button
+              onClick={() => router.push("/terms")}
+              className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors text-slate-300"
+            >
+              <span>Terms of Service</span>
+              <span className="text-slate-600">→</span>
+            </button>
+            <button
+              onClick={() => router.push("/privacy")}
+              className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors text-slate-300"
+            >
+              <span>Privacy Policy</span>
+              <span className="text-slate-600">→</span>
+            </button>
+
+            <div className="pt-4 mt-4 border-t border-white/10">
+              <button
+                onClick={handleLogout}
+                className="w-full p-4 rounded-xl hover:bg-red-500/10 text-red-400 hover:text-red-300 transition-colors font-medium text-left flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                  <path fillRule="evenodd" d="M7.5 3.75A1.5 1.5 0 006 5.25v13.5a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5V15a.75.75 0 011.5 0v3.75a3 3 0 01-3 3h-6a3 3 0 01-3-3V5.25a3 3 0 013-3h6a3 3 0 013 3V9A.75.75 0 0115 9V5.25a1.5 1.5 0 00-1.5-1.5h-6zm10.72 4.72a.75.75 0 011.06 0l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 11-1.06-1.06l1.72-1.72H9a.75.75 0 010-1.5h10.94l-1.72-1.72a.75.75 0 010-1.06z" clipRule="evenodd" />
+                </svg>
+                Sign Out
+              </button>
+            </div>
           </div>
-
-          <Button
-            onClick={() => router.push("/profile/edit")}
-            className="w-full mb-4"
-          >
-            プロフィールを編集
-          </Button>
-        </div>
-
-        {/* メニュー */}
-        <div className="bg-white divide-y">
-          <button
-            onClick={() => router.push("/terms")}
-            className="w-full p-4 text-left hover:bg-gray-50"
-          >
-            利用規約
-          </button>
-          <button
-            onClick={() => router.push("/privacy")}
-            className="w-full p-4 text-left hover:bg-gray-50"
-          >
-            プライバシーポリシー
-          </button>
-          <button
-            onClick={handleLogout}
-            className="w-full p-4 text-left text-red-600 hover:bg-gray-50"
-          >
-            ログアウト
-          </button>
         </div>
       </div>
 
@@ -135,4 +164,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
