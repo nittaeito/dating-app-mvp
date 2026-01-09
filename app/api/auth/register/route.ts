@@ -13,7 +13,17 @@ export async function POST(request: Request) {
     const validated = registerSchema.parse(body);
 
     // 管理者権限のクライアントを使用（RLSをバイパス）
-    const supabase = createAdminClient();
+    let supabase;
+    try {
+      supabase = createAdminClient();
+    } catch (clientError) {
+      console.error("Supabase client creation error:", clientError);
+      throw new APIError(
+        "INTERNAL_ERROR",
+        `Supabase接続エラー: ${clientError instanceof Error ? clientError.message : "Unknown error"}`,
+        500
+      );
+    }
 
     // メールアドレス重複チェック
     const { data: existingUser, error: checkError } = await supabase
@@ -56,6 +66,19 @@ export async function POST(request: Request) {
 
     if (userError) {
       console.error("User creation error:", userError);
+      console.error("Error details:", JSON.stringify(userError, null, 2));
+      console.error("Error code:", userError.code);
+      console.error("Error hint:", userError.hint);
+      
+      // テーブルが存在しない場合のエラー
+      if (userError.code === '42P01' || userError.message?.includes('does not exist')) {
+        throw new APIError(
+          "INTERNAL_ERROR",
+          "データベーステーブルが存在しません。Supabaseでデータベーススキーマを適用してください。",
+          500
+        );
+      }
+      
       throw new APIError(
         "INTERNAL_ERROR",
         `ユーザー作成に失敗しました: ${userError.message || JSON.stringify(userError)}`,
