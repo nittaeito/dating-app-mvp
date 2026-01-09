@@ -19,49 +19,48 @@ Tinder/タップル/東カレデート風のスワイプ型マッチングアプ
 
 ## セットアップ
 
-### 1. 依存関係のインストール
+**🚀 初めてセットアップする場合は、[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)を参照してください。**  
+詳細な手順とトラブルシューティングが記載されています。
+
+### クイックセットアップ
+
+#### 1. 依存関係のインストール
 
 ```bash
 npm install
 ```
 
-### 2. 環境変数の設定
+#### 2. Supabaseプロジェクトの作成とセットアップ
 
-`.env.local.example`をコピーして`.env.local`を作成し、必要な値を設定してください。
+1. [Supabase](https://supabase.com)でプロジェクトを作成
+2. **重要**: [SUPABASE_SETUP.md](./SUPABASE_SETUP.md)に従って以下を実行：
+   - データベーススキーマの適用（`001_initial_schema.sql`）
+   - **RLSの無効化**（`003_disable_rls_for_custom_auth.sql`）⚠️ 必須
+   - Storageバケットの作成とポリシー設定（`004_storage_policies_for_custom_auth.sql`）
 
-```bash
-cp .env.local.example .env.local
+#### 3. 環境変数の設定
+
+プロジェクトルートに `.env.local` ファイルを作成し、以下を設定：
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+SESSION_SECRET=your_random_secret_key
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-`.env.local`に以下を設定：
-- `NEXT_PUBLIC_SUPABASE_URL` - SupabaseプロジェクトURL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase匿名キー
-- `SUPABASE_SERVICE_ROLE_KEY` - Supabaseサービスロールキー
-- `SESSION_SECRET` - セッション暗号化キー（任意の文字列）
-- `NEXT_PUBLIC_APP_URL` - アプリのURL（開発時は http://localhost:3000）
+詳細は[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)の「ステップ5」を参照。
 
-### 3. Supabaseのセットアップ
-
-#### データベーススキーマの適用
-
-1. Supabaseダッシュボードを開く
-2. SQL Editorに移動
-3. `supabase/migrations/001_initial_schema.sql` の内容を実行
-
-#### Storageバケットの作成
-
-1. Supabaseダッシュボード > Storage
-2. 新しいバケット作成: `profile-photos`
-3. Public設定: `ON`
-4. RLSポリシー設定（`02_DATABASE_DESIGN.md`参照）
-
-### 4. 開発サーバーの起動
+#### 4. 開発サーバーの起動
 
 ```bash
 npm run dev
 ```
 
 ブラウザで http://localhost:3000 を開いてください。
+
+**⚠️ 注意**: このアプリは**独自のCookieベース認証**を使用しています。Supabase Authは使用していません。
 
 ## ドキュメント
 

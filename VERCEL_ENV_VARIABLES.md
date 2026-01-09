@@ -12,30 +12,31 @@
 ### 1. NEXT_PUBLIC_SUPABASE_URL
 ```
 Name: NEXT_PUBLIC_SUPABASE_URL
-Value: https://mscuxylyloerhxzkzven.supabase.co
+Value: https://dpapkqtvuabnglrffqbw.supabase.co
 Environment: ✅ Production, ✅ Preview, ✅ Development
 ```
 
 ### 2. NEXT_PUBLIC_SUPABASE_ANON_KEY
 ```
 Name: NEXT_PUBLIC_SUPABASE_ANON_KEY
-Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zY3V4eWx5bG9lcmh4emt6dmVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2Njg5NDIsImV4cCI6MjA4MzI0NDk0Mn0._ltmL4Nevo0zK2hK8QGAvbddPVHKk33JoGOfSnSSBIo
+Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwYXBrcXR2dWFibmdscmZmcWJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5MjY2NzAsImV4cCI6MjA4MzUwMjY3MH0.XxL1h6wO1VeENM4E_9A3iDr2_yTmbhYKSbrICqY7ZoI
 Environment: ✅ Production, ✅ Preview, ✅ Development
 ```
 
 ### 3. SUPABASE_SERVICE_ROLE_KEY
 ```
 Name: SUPABASE_SERVICE_ROLE_KEY
-Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zY3V4eWx5bG9lcmh4emt6dmVuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzY2ODk0MiwiZXhwIjoyMDgzMjQ0OTQyfQ.ag_Hc7E9jOn_MTLMLMLVBliWV66oXTkYFhyEhwO5jtFbU
+Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwYXBrcXR2dWFibmdscmZmcWJ3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzkyNjY3MCwiZXhwIjoyMDgzNTAyNjcwfQ.tS1tipYQU9tHwNj3ZNBUWSpF_V49Y-eoC9q8UIoiYVc
 Environment: ✅ Production, ✅ Preview, ✅ Development
 ```
 
 ### 4. SESSION_SECRET
 ```
 Name: SESSION_SECRET
-Value: mscuxylyloerhxzkzven
+Value: dpapkqtvuabnglrffqbw_dating_app_secret_2025
 Environment: ✅ Production, ✅ Preview, ✅ Development
 ```
+**⚠️ 注意**: SESSION_SECRETは本番環境用のランダムな文字列に変更することを推奨します。強力なセキュリティのため、32文字以上のランダムな文字列を使用してください。
 
 ### 5. NEXT_PUBLIC_APP_URL
 ```
@@ -58,10 +59,10 @@ Environment: ✅ Production, ✅ Preview, ✅ Development
 Vercelの環境変数設定画面で、以下の形式でコピー&ペーストできます：
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://mscuxylyloerhxzkzven.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zY3V4eWx5bG9lcmh4emt6dmVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2Njg5NDIsImV4cCI6MjA4MzI0NDk0Mn0._ltmL4Nevo0zK2hK8QGAvbddPVHKk33JoGOfSnSSBIo
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zY3V4eWx5bG9lcmh4emt6dmVuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzY2ODk0MiwiZXhwIjoyMDgzMjQ0OTQyfQ.ag_Hc7E9jOn_MTLMLMLVBliWV66oXTkYFhyEhwO5jtFbU
-SESSION_SECRET=mscuxylyloerhxzkzven
+NEXT_PUBLIC_SUPABASE_URL=https://dpapkqtvuabnglrffqbw.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwYXBrcXR2dWFibmdscmZmcWJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5MjY2NzAsImV4cCI6MjA4MzUwMjY3MH0.XxL1h6wO1VeENM4E_9A3iDr2_yTmbhYKSbrICqY7ZoI
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwYXBrcXR2dWFibmdscmZmcWJ3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzkyNjY3MCwiZXhwIjoyMDgzNTAyNjcwfQ.tS1tipYQU9tHwNj3ZNBUWSpF_V49Y-eoC9q8UIoiYVc
+SESSION_SECRET=dpapkqtvuabnglrffqbw_dating_app_secret_2025
 NEXT_PUBLIC_APP_URL=https://YOUR_PROJECT_NAME.vercel.app
 NODE_ENV=production
 ```

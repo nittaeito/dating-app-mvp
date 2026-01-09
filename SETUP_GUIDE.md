@@ -9,12 +9,26 @@
 
 ## 2. データベーススキーマの適用
 
+**重要**: このアプリは独自のCookieベース認証システムを使用しています。Supabase Authは使用していません。
+
 1. Supabaseダッシュボードでプロジェクトを開く
 2. 左メニューから「SQL Editor」を選択
-3. 「New query」をクリック
-4. `supabase/migrations/001_initial_schema.sql` の内容をコピー&ペースト
-5. 「Run」ボタンをクリックして実行
-6. エラーがなければ成功です
+3. 以下の順序でSQLファイルを実行してください：
+
+### 2.1 初期スキーマの適用
+1. 「New query」をクリック
+2. `supabase/migrations/001_initial_schema.sql` の内容をコピー&ペースト
+3. 「Run」ボタンをクリックして実行
+4. エラーがなければ成功です
+
+### 2.2 RLSの無効化（重要）
+独自認証システムを使用しているため、RLSを無効化する必要があります。
+
+1. 「New query」をクリック
+2. `supabase/migrations/003_disable_rls_for_custom_auth.sql` の内容をコピー&ペースト
+3. 「Run」ボタンをクリックして実行
+
+**注意**: RLSポリシーファイル（`002_rls_policies.sql`）は実行しないでください。このアプリはSupabase Authを使用していないため、`auth.uid()`は機能しません。
 
 ## 3. Storageバケットの作成
 
@@ -26,33 +40,13 @@
 
 ### Storage RLSポリシーの設定
 
-Storageバケット作成後、以下のSQLをSQL Editorで実行してください：
+Storageバケット作成後、以下のSQLファイルを実行してください：
 
-```sql
--- ユーザーは自分のフォルダにのみアップロード可能
-CREATE POLICY "Users can upload own photos"
-ON storage.objects FOR INSERT
-TO authenticated
-WITH CHECK (
-  bucket_id = 'profile-photos' 
-  AND (storage.foldername(name))[1] = auth.uid()::text
-);
+1. 「New query」をクリック
+2. `supabase/migrations/004_storage_policies_for_custom_auth.sql` の内容をコピー&ペースト
+3. 「Run」ボタンをクリックして実行
 
--- 全員が写真を閲覧可能
-CREATE POLICY "Anyone can view photos"
-ON storage.objects FOR SELECT
-TO public
-USING (bucket_id = 'profile-photos');
-
--- ユーザーは自分の写真のみ削除可能
-CREATE POLICY "Users can delete own photos"
-ON storage.objects FOR DELETE
-TO authenticated
-USING (
-  bucket_id = 'profile-photos'
-  AND (storage.foldername(name))[1] = auth.uid()::text
-);
-```
+**注意**: アップロード・削除・更新は全てサーバー側API（`createAdminClient`使用）でのみ実行されます。クライアント側からの直接操作は許可していません。
 
 ## 4. 環境変数の設定
 
