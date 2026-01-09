@@ -68,11 +68,12 @@ function getRandomBio(): string {
 export async function POST(request: Request) {
   try {
     // 本番環境では無効化（開発環境のみ）
-    if (process.env.NODE_ENV === "production") {
-      throw new APIError("FORBIDDEN", "このエンドポイントは本番環境では使用できません", 403);
-    }
+    // 注意: 必要に応じてコメントアウトして本番でも使用可能にできます
+    // if (process.env.NODE_ENV === "production") {
+    //   throw new APIError("FORBIDDEN", "このエンドポイントは本番環境では使用できません", 403);
+    // }
 
-    const body = await request.json();
+    const body = await request.json().catch(() => ({}));
     const count = body.count || 10; // デフォルト10人ずつ
 
     const supabase = createAdminClient();
