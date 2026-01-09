@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { MessageList } from "@/components/chat/MessageList";
 import { MessageInput } from "@/components/chat/MessageInput";
+import { ProfileModal } from "@/components/chat/ProfileModal";
 import { createClient } from "@/lib/supabase/client";
 import type { Message } from "@/types/message";
 import toast from "react-hot-toast";
@@ -24,6 +25,8 @@ export default function ChatPage() {
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const channelRef = useRef<any>(null);
 
   const loadMatchInfo = useCallback(async () => {
     try {
@@ -77,10 +80,21 @@ export default function ChatPage() {
   }, [matchId]);
 
   const setupRealtime = useCallback(() => {
+    if (!matchId || !currentUserId) return;
+
     const supabase = createClient();
 
+    // 既存のチャンネルがあれば解除
+    if (channelRef.current) {
+      channelRef.current.unsubscribe();
+    }
+
     const channel = supabase
-      .channel(`match:${matchId}`)
+      .channel(`match:${matchId}`, {
+        config: {
+          broadcast: { self: true },
+        },
+      })
       .on(
         "postgres_changes",
         {
@@ -92,8 +106,9 @@ export default function ChatPage() {
         (payload) => {
           const newMessage = payload.new as any;
           setMessages((prev) => {
-            // 重複チェック
-            if (prev.some((m) => m.id === newMessage.id)) {
+            // 重複チェック（より確実に）
+            const exists = prev.find((m) => m.id === newMessage.id);
+            if (exists) {
               return prev;
             }
             return [
@@ -111,39 +126,113 @@ export default function ChatPage() {
           });
         }
       )
-      .subscribe();
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `match_id=eq.${matchId}`,
+        },
+        (payload) => {
+          const updatedMessage = payload.new as any;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === updatedMessage.id
+                ? {
+                    ...m,
+                    readAt: updatedMessage.read_at || undefined,
+                  }
+                : m
+            )
+          );
+        }
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          console.log("Realtime subscription active");
+        } else if (status === "CHANNEL_ERROR") {
+          console.error("Realtime subscription error");
+        }
+      });
+
+    channelRef.current = channel;
 
     return () => {
-      channel.unsubscribe();
+      if (channelRef.current) {
+        channelRef.current.unsubscribe();
+        channelRef.current = null;
+      }
     };
   }, [matchId, currentUserId]);
 
   useEffect(() => {
     loadMatchInfo();
     loadMessages();
-    const cleanup = setupRealtime();
-    return cleanup;
-  }, [loadMatchInfo, loadMessages, setupRealtime]);
+  }, [loadMatchInfo, loadMessages]);
 
+  useEffect(() => {
+    if (currentUserId) {
+      const cleanup = setupRealtime();
+      return cleanup;
+    }
+  }, [currentUserId, setupRealtime]);
 
   async function handleSend(content: string) {
+    if (!content.trim() || isSending) return;
+
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMessage: Message = {
+      id: tempId,
+      matchId,
+      senderId: currentUserId,
+      content: content.trim(),
+      createdAt: new Date().toISOString(),
+      isMine: true,
+    };
+
+    // 楽観的更新（即座に表示）
+    setMessages((prev) => [...prev, optimisticMessage]);
     setIsSending(true);
+
     try {
       const res = await fetch(`/api/messages/${matchId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content: content.trim() }),
       });
 
       const result = await res.json();
 
       if (!res.ok) {
+        // エラー時は楽観的更新を元に戻す
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
         toast.error(result.error?.message || "メッセージ送信に失敗しました");
         return;
       }
 
-      // メッセージはRealtimeで自動的に追加される
+      // 楽観的更新を実際のメッセージに置き換え（Realtimeで追加される前に）
+      setMessages((prev) => {
+        const withoutTemp = prev.filter((m) => m.id !== tempId);
+        // Realtimeで追加されるので、重複チェックは不要だが念のため
+        const exists = withoutTemp.find((m) => m.id === result.data.message.id);
+        return exists
+          ? withoutTemp
+          : [
+              ...withoutTemp,
+              {
+                id: result.data.message.id,
+                matchId: result.data.message.matchId || matchId,
+                senderId: result.data.message.senderId,
+                content: result.data.message.content,
+                createdAt: result.data.message.createdAt,
+                isMine: true,
+              },
+            ];
+      });
     } catch (error) {
+      // エラー時は楽観的更新を元に戻す
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
       toast.error("通信エラーが発生しました");
     } finally {
       setIsSending(false);
@@ -164,13 +253,16 @@ export default function ChatPage() {
       <div className="bg-white border-b p-4 flex items-center gap-4">
         <button
           onClick={() => router.back()}
-          className="text-gray-600 hover:text-gray-800"
+          className="text-gray-600 hover:text-gray-800 p-2 -ml-2"
         >
           ←
         </button>
         {partner && (
           <>
-            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200">
+            <button
+              onClick={() => setShowProfileModal(true)}
+              className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 hover:opacity-80 transition-opacity"
+            >
               {partner.mainPhoto ? (
                 <Image
                   src={partner.mainPhoto}
@@ -179,16 +271,20 @@ export default function ChatPage() {
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                <div className="w-full h-full flex items-center justify-center text-gray-400 text-xl">
                   👤
                 </div>
               )}
-            </div>
-            <div className="flex-1">
-              <h1 className="font-semibold">
+            </button>
+            <button
+              onClick={() => setShowProfileModal(true)}
+              className="flex-1 text-left hover:opacity-80 transition-opacity"
+            >
+              <h1 className="font-semibold text-lg">
                 {partner.nickname}, {partner.age}
               </h1>
-            </div>
+              <p className="text-sm text-gray-500">プロフィールを見る</p>
+            </button>
           </>
         )}
       </div>
@@ -198,6 +294,15 @@ export default function ChatPage() {
 
       {/* 入力エリア */}
       <MessageInput onSend={handleSend} isLoading={isSending} />
+
+      {/* プロフィールモーダル */}
+      {partner && (
+        <ProfileModal
+          userId={partner.userId}
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+        />
+      )}
     </div>
   );
 }
