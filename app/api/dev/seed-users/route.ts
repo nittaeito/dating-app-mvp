@@ -67,11 +67,8 @@ function getRandomBio(): string {
 
 export async function POST(request: Request) {
   try {
-    // 本番環境では無効化（開発環境のみ）
-    // 注意: 必要に応じてコメントアウトして本番でも使用可能にできます
-    // if (process.env.NODE_ENV === "production") {
-    //   throw new APIError("FORBIDDEN", "このエンドポイントは本番環境では使用できません", 403);
-    // }
+    // 本番環境でも使用可能（テストユーザー作成用）
+    // セキュリティ上の懸念がある場合は、APIキーや認証を追加してください
 
     const body = await request.json().catch(() => ({}));
     const count = body.count || 10; // デフォルト10人ずつ

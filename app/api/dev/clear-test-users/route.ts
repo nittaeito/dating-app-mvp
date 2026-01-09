@@ -6,10 +6,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST() {
   try {
-    // 本番環境では無効化
-    if (process.env.NODE_ENV === "production") {
-      throw new APIError("FORBIDDEN", "このエンドポイントは本番環境では使用できません", 403);
-    }
+    // 本番環境でも使用可能（テストユーザー削除用）
+    // セキュリティ上の懸念がある場合は、APIキーや認証を追加してください
 
     const supabase = createAdminClient();
 
