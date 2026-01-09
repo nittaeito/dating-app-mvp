@@ -6,6 +6,11 @@ export async function middleware(request: NextRequest) {
   const session = await getSession();
   const { pathname } = request.nextUrl;
 
+  // /devページは認証不要
+  if (pathname.startsWith("/dev")) {
+    return NextResponse.next();
+  }
+
   // 認証が必要なパス
   const protectedPaths = ["/app", "/profile"];
   const isProtected = protectedPaths.some((path) =>

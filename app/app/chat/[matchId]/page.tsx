@@ -248,20 +248,20 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* ヘッダー */}
-      <div className="bg-white border-b p-4 flex items-center gap-4">
+      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm p-4 flex items-center gap-4 sticky top-0 z-10">
         <button
           onClick={() => router.back()}
-          className="text-gray-600 hover:text-gray-800 p-2 -ml-2"
+          className="text-gray-600 hover:text-gray-800 p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
         >
-          ←
+          <span className="text-xl">←</span>
         </button>
         {partner && (
           <>
             <button
               onClick={() => setShowProfileModal(true)}
-              className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 hover:opacity-80 transition-opacity"
+              className="relative w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-blue-200 to-purple-200 hover:opacity-90 transition-all hover:scale-105 shadow-md ring-2 ring-white"
             >
               {partner.mainPhoto ? (
                 <Image
@@ -271,19 +271,22 @@ export default function ChatPage() {
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400 text-xl">
+                <div className="w-full h-full flex items-center justify-center text-gray-400 text-2xl">
                   👤
                 </div>
               )}
             </button>
             <button
               onClick={() => setShowProfileModal(true)}
-              className="flex-1 text-left hover:opacity-80 transition-opacity"
+              className="flex-1 text-left hover:opacity-80 transition-opacity group"
             >
-              <h1 className="font-semibold text-lg">
+              <h1 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 transition-colors">
                 {partner.nickname}, {partner.age}
               </h1>
-              <p className="text-sm text-gray-500">プロフィールを見る</p>
+              <p className="text-sm text-gray-500 flex items-center gap-1">
+                <span>👆</span>
+                <span>タップしてプロフィールを見る</span>
+              </p>
             </button>
           </>
         )}
